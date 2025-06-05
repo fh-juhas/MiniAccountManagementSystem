@@ -1,0 +1,84 @@
+﻿@page
+@model MiniAccountManagementSystem.Pages.Accounts.ChartOfAccountsModel
+@{
+    ViewData["Title"] = "Chart of Accounts";
+}
+
+<h1>Chart of Accounts</h1>
+
+
+<h2>Create New Account</h2>
+<form method="post" asp-page-handler="Create">
+    <div>
+        <label asp-for="NewAccount.AccountCode">Account Code</label>
+        <input asp-for="NewAccount.AccountCode" required />
+    </div>
+    <div>
+        <label asp-for="NewAccount.AccountName">Account Name</label>
+        <input asp-for="NewAccount.AccountName" required />
+    </div>
+    <div>
+        <label asp-for="NewAccount.ParentAccountId">Parent Account</label>
+        <select asp-for="NewAccount.ParentAccountId">
+            <option value="">-- None --</option>
+            @foreach (var account in Model.Accounts)
+            {
+                <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label asp-for="NewAccount.AccountType">Account Type</label>
+        <input asp-for="NewAccount.AccountType" required />
+    </div>
+    <div>
+        <label asp-for="NewAccount.IsActive">Is Active</label>
+        <input asp-for="NewAccount.IsActive" type="checkbox" checked />
+    </div>
+    <button type="submit">Create</button>
+</form>
+
+<h2>Account Hierarchy</h2>
+<div id="accounts-table"></div>
+<button onclick="exportToExcel()">Export to Excel</button>
+
+<script>
+    var accountsTable = new Tabulator("#accounts-table", {
+        data: @Json.Serialize(Model.Accounts),
+        dataTree: true,
+        dataTreeStartExpanded: true,
+        columns: [
+            { title: "Account Code", field: "AccountCode" },
+            { title: "Account Name", field: "AccountName" },
+            { title: "Account Type", field: "AccountType" },
+            { title: "Is Active", field: "IsActive", formatter: "tickCross" },
+            { title: "Actions", formatter: (cell) => {
+                return `
+                    <form method="post" asp-page-handler="Update">
+                        <input type="hidden" name="accountId" value="${cell.getRow().getData().AccountId}" />
+                        <input type="text" name="accountCode" value="${cell.getRow().getData().AccountCode}" />
+                        <input type="text" name="accountName" value="${cell.getRow().getData().AccountName}" />
+                        <select name="parentAccountId">
+                            <option value="">-- None --</option>
+    @foreach (var account in Model.Accounts)
+    {
+                                    <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
+    }
+                        </select>
+                        <input type="text" name="accountType" value="${cell.getRow().getData().AccountType}" />
+                        <input type="checkbox" name="isActive" ${cell.getRow().getData().IsActive ? 'checked' : ''} />
+                        <button type="submit">Update</button>
+                    </form>
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="accountId" value="${cell.getRow().getData().AccountId}" />
+                        <button type="submit">Delete</button>
+                    </form>`;
+            }}
+        ],
+        dataTreeChildField: "Children"
+    });
+
+    function exportToExcel() {
+        accountsTable.download("xlsx", "chart_of_accounts.xlsx", { sheetName: "Accounts" });
+    }
+</script>

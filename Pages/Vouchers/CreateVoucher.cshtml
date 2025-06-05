@@ -1,0 +1,111 @@
+﻿@page
+@model MiniAccountManagementSystem.Pages.Vouchers.CreateVoucherModel
+@{
+    ViewData["Title"] = "Create Voucher";
+}
+
+<h1>Create Voucher</h1>
+
+<form method="post">
+    <div class="form-group">
+        <label asp-for="Voucher.VoucherNo"></label>
+        <input asp-for="Voucher.VoucherNo" class="form-control" />
+        <span asp-validation-for="Voucher.VoucherNo" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Voucher.VoucherType"></label>
+        <select asp-for="Voucher.VoucherType" class="form-control" required>
+            <option value="Journal">Journal</option>
+            <option value="Payment">Payment</option>
+            <option value="Receipt">Receipt</option>
+        </select>
+        <span asp-validation-for="Voucher.VoucherType" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Voucher.VoucherDate"></label>
+        <input asp-for="Voucher.VoucherDate" type="date" class="form-control" />
+        <span asp-validation-for="Voucher.VoucherDate" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Voucher.Reference"></label>
+        <input asp-for="Voucher.Reference" class="form-control" />
+        <span asp-validation-for="Voucher.Reference" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Voucher.Description"></label>
+        <input asp-for="Voucher.Description" class="form-control" />
+        <span asp-validation-for="Voucher.Description" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Voucher.Status"></label>
+        <input asp-for="Voucher.Status" type="hidden" value="Draft" />
+    </div>
+
+    <h2>Details</h2>
+    <div id="details">
+        @for (int i = 0; i < Model.Voucher.VoucherDetails.Count; i++)
+        {
+            <div class="detail">
+                <select asp-for="Voucher.VoucherDetails[i].AccountId" class="form-control" required onchange="updateAccountInfo(@i)">
+                    <option value="">-- Select Account --</option>
+                    @foreach (var account in Model.Accounts)
+                    {
+                        <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
+                    }
+                </select>
+                <input asp-for="Voucher.VoucherDetails[i].Description" class="form-control" placeholder="Description" maxlength="200" />
+                <span asp-validation-for="Voucher.VoucherDetails[i].Description" class="text-danger"></span>
+                <input asp-for="Voucher.VoucherDetails[i].DebitAmount" class="form-control" placeholder="Debit" step="0.01" />
+                <span asp-validation-for="Voucher.VoucherDetails[i].DebitAmount" class="text-danger"></span>
+                <input asp-for="Voucher.VoucherDetails[i].CreditAmount" class="form-control" placeholder="Credit" step="0.01" />
+                <span asp-validation-for="Voucher.VoucherDetails[i].CreditAmount" class="text-danger"></span>
+                <div>Account Code: <span id="accountCode_@i"></span></div>
+                <div>Account Name: <span id="accountName_@i"></span></div>
+            </div>
+        }
+    </div>
+    <button type="button" onclick="addDetail()">Add Detail</button>
+    <button type="submit" class="btn btn-primary">Save Voucher</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let detailIndex = @Model.Voucher.VoucherDetails.Count;
+        function addDetail() {
+            const detailsDiv = document.getElementById("details");
+            const newDetail = document.createElement("div");
+            newDetail.className = "detail";
+            newDetail.innerHTML = `
+                <select name="Voucher.VoucherDetails[${detailIndex}].AccountId" class="form-control" required onchange="updateAccountInfo(${detailIndex})">
+                    <option value="">-- Select Account --</option>
+        @foreach (var account in Model.Accounts)
+        {
+                            <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
+        }
+                </select>
+                <input name="Voucher.VoucherDetails[${detailIndex}].Description" class="form-control" placeholder="Description" maxlength="200" />
+                <input name="Voucher.VoucherDetails[${detailIndex}].DebitAmount" class="form-control" placeholder="Debit" step="0.01" />
+                <input name="Voucher.VoucherDetails[${detailIndex}].CreditAmount" class="form-control" placeholder="Credit" step="0.01" />
+                <div>Account Code: <span id="accountCode_${detailIndex}"></span></div>
+                <div>Account Name: <span id="accountName_${detailIndex}"></span></div>
+            `;
+            detailsDiv.appendChild(newDetail);
+            detailIndex++;
+        }
+
+        function updateAccountInfo(index) {
+            const select = document.getElementsByName(`Voucher.VoucherDetails[${index}].AccountId`)[0];
+            const accountId = select.value;
+            const account = @Html.Raw(Json.Serialize(Model.Accounts));
+            const selectedAccount = account.find(a => a.AccountId == accountId);
+            if (selectedAccount) {
+                document.getElementById(`accountCode_${index}`).textContent = selectedAccount.AccountCode;
+                document.getElementById(`accountName_${index}`).textContent = selectedAccount.AccountName;
+            } else {
+                document.getElementById(`accountCode_${index}`).textContent = '';
+                document.getElementById(`accountName_${index}`).textContent = '';
+            }
+        }
+    </script>
+}
