@@ -5,7 +5,8 @@
 }
 
 <h1>Chart of Accounts</h1>
-
+<link href="https://unpkg.com/tabulator-tables@5.5.2/dist/css/tabulator.min.css" rel="stylesheet">
+<script src="https://unpkg.com/tabulator-tables@5.5.2/dist/js/tabulator.min.js"></script>
 
 <h2>Create New Account</h2>
 <form method="post" asp-page-handler="Create">
@@ -48,16 +49,16 @@
         dataTree: true,
         dataTreeStartExpanded: true,
         columns: [
-            { title: "Account Code", field: "AccountCode" },
-            { title: "Account Name", field: "AccountName" },
-            { title: "Account Type", field: "AccountType" },
-            { title: "Is Active", field: "IsActive", formatter: "tickCross" },
+            { title: "Account Code", field: "accountCode" },
+            { title: "Account Name", field: "accountName" },
+            { title: "Account Type", field: "accountType" },
+            { title: "Is Active", field: "isActive", formatter: "tickCross" },
             { title: "Actions", formatter: (cell) => {
                 return `
                     <form method="post" asp-page-handler="Update">
-                        <input type="hidden" name="accountId" value="${cell.getRow().getData().AccountId}" />
-                        <input type="text" name="accountCode" value="${cell.getRow().getData().AccountCode}" />
-                        <input type="text" name="accountName" value="${cell.getRow().getData().AccountName}" />
+                        <input type="hidden" name="accountId" value="${cell.getRow().getData().accountId}" />
+                        <input type="text" name="accountCode" value="${cell.getRow().getData().accountCode}" />
+                        <input type="text" name="accountName" value="${cell.getRow().getData().accountName}" />
                         <select name="parentAccountId">
                             <option value="">-- None --</option>
     @foreach (var account in Model.Accounts)
@@ -65,12 +66,12 @@
                                     <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
     }
                         </select>
-                        <input type="text" name="accountType" value="${cell.getRow().getData().AccountType}" />
-                        <input type="checkbox" name="isActive" ${cell.getRow().getData().IsActive ? 'checked' : ''} />
+                        <input type="text" name="accountType" value="${cell.getRow().getData().accountType}" />
+                        <input type="checkbox" name="isActive" ${cell.getRow().getData().isActive ? 'checked' : ''} />
                         <button type="submit">Update</button>
                     </form>
                     <form method="post" asp-page-handler="Delete">
-                        <input type="hidden" name="accountId" value="${cell.getRow().getData().AccountId}" />
+                        <input type="hidden" name="accountId" value="${cell.getRow().getData().accountId}" />
                         <button type="submit">Delete</button>
                     </form>`;
             }}

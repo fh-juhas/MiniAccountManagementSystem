@@ -43,55 +43,162 @@
 
     <h2>Details</h2>
     <div id="details">
-        @for (int i = 0; i < Model.Voucher.VoucherDetails.Count; i++)
+        @for (int i = 0; i < (Model.Voucher.VoucherDetails?.Count ?? 0); i++)
         {
-            <div class="detail">
-                <select asp-for="Voucher.VoucherDetails[i].AccountId" class="form-control" required onchange="updateAccountInfo(@i)">
-                    <option value="">-- Select Account --</option>
-                    @foreach (var account in Model.Accounts)
-                    {
-                        <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
-                    }
-                </select>
-                <input asp-for="Voucher.VoucherDetails[i].Description" class="form-control" placeholder="Description" maxlength="200" />
-                <span asp-validation-for="Voucher.VoucherDetails[i].Description" class="text-danger"></span>
-                <input asp-for="Voucher.VoucherDetails[i].DebitAmount" class="form-control" placeholder="Debit" step="0.01" />
-                <span asp-validation-for="Voucher.VoucherDetails[i].DebitAmount" class="text-danger"></span>
-                <input asp-for="Voucher.VoucherDetails[i].CreditAmount" class="form-control" placeholder="Credit" step="0.01" />
-                <span asp-validation-for="Voucher.VoucherDetails[i].CreditAmount" class="text-danger"></span>
-                <div>Account Code: <span id="accountCode_@i"></span></div>
-                <div>Account Name: <span id="accountName_@i"></span></div>
+            <div class="detail" data-index="@i">
+                <div class="row">
+                    <div class="col-md-11">
+                        <select asp-for="Voucher.VoucherDetails[i].AccountId" class="form-control mb-2" required onchange="updateAccountInfo(@i)">
+                            <option value="">-- Select Account --</option>
+                            @foreach (var account in Model.Accounts)
+                            {
+                                <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
+                            }
+                        </select>
+                        <input asp-for="Voucher.VoucherDetails[i].AccountCode" type="hidden" />
+                        <input asp-for="Voucher.VoucherDetails[i].AccountName" type="hidden" />
+                        <input asp-for="Voucher.VoucherDetails[i].Description" class="form-control mb-2" placeholder="Description" maxlength="200" />
+                        <span asp-validation-for="Voucher.VoucherDetails[i].Description" class="text-danger"></span>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input asp-for="Voucher.VoucherDetails[i].DebitAmount" class="form-control mb-2" placeholder="Enter Debit Amount" />
+                                <span asp-validation-for="Voucher.VoucherDetails[i].DebitAmount" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <input asp-for="Voucher.VoucherDetails[i].CreditAmount" class="form-control mb-2" placeholder="Enter Credit Amount" />
+                                <span asp-validation-for="Voucher.VoucherDetails[i].CreditAmount" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small>Account Code: <span id="accountCode_@i"></span></small>
+                            </div>
+                            <div class="col-md-6">
+                                <small>Account Name: <span id="accountName_@i"></span></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(@i)" title="Remove Detail">
+                            <i class="fas fa-trash"></i> ×
+                        </button>
+                    </div>
+                </div>
+                <hr />
             </div>
         }
     </div>
-    <button type="button" onclick="addDetail()">Add Detail</button>
-    <button type="submit" class="btn btn-primary">Save Voucher</button>
+    <div class="mb-3">
+        <button type="button" class="btn btn-secondary" onclick="addDetail()">
+            <i class="fas fa-plus"></i> Add Detail
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Save Voucher
+        </button>
+    </div>
 </form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        let detailIndex = @Model.Voucher.VoucherDetails.Count;
+        let detailIndex = @(Model.Voucher.VoucherDetails?.Count ?? 0);
+
         function addDetail() {
             const detailsDiv = document.getElementById("details");
             const newDetail = document.createElement("div");
             newDetail.className = "detail";
+            newDetail.setAttribute("data-index", detailIndex);
             newDetail.innerHTML = `
-                <select name="Voucher.VoucherDetails[${detailIndex}].AccountId" class="form-control" required onchange="updateAccountInfo(${detailIndex})">
-                    <option value="">-- Select Account --</option>
+                <div class="row">
+                    <div class="col-md-11">
+                        <select name="Voucher.VoucherDetails[${detailIndex}].AccountId" class="form-control mb-2" required onchange="updateAccountInfo(${detailIndex})">
+                            <option value="">-- Select Account --</option>
         @foreach (var account in Model.Accounts)
         {
-                            <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
+                                <option value="@account.AccountId">@account.AccountCode - @account.AccountName</option>
         }
-                </select>
-                <input name="Voucher.VoucherDetails[${detailIndex}].Description" class="form-control" placeholder="Description" maxlength="200" />
-                <input name="Voucher.VoucherDetails[${detailIndex}].DebitAmount" class="form-control" placeholder="Debit" step="0.01" />
-                <input name="Voucher.VoucherDetails[${detailIndex}].CreditAmount" class="form-control" placeholder="Credit" step="0.01" />
-                <div>Account Code: <span id="accountCode_${detailIndex}"></span></div>
-                <div>Account Name: <span id="accountName_${detailIndex}"></span></div>
+                        </select>
+                        <input name="Voucher.VoucherDetails[${detailIndex}].AccountCode" type="hidden" />
+                        <input name="Voucher.VoucherDetails[${detailIndex}].AccountName" type="hidden" />
+                        <input name="Voucher.VoucherDetails[${detailIndex}].Description" class="form-control mb-2" placeholder="Description" maxlength="200" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input name="Voucher.VoucherDetails[${detailIndex}].DebitAmount" class="form-control mb-2" placeholder="Enter Debit Amount" />
+                            </div>
+                            <div class="col-md-6">
+                                <input name="Voucher.VoucherDetails[${detailIndex}].CreditAmount" class="form-control mb-2" placeholder="Enter Credit Amount" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small>Account Code: <span id="accountCode_${detailIndex}"></span></small>
+                            </div>
+                            <div class="col-md-6">
+                                <small>Account Name: <span id="accountName_${detailIndex}"></span></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(${detailIndex})" title="Remove Detail">
+                            <i class="fas fa-trash"></i> ×
+                        </button>
+                    </div>
+                </div>
+                <hr />
             `;
             detailsDiv.appendChild(newDetail);
             detailIndex++;
+        }
+
+        function removeDetail(index) {
+            // Find the detail div with the specific data-index
+            const detailToRemove = document.querySelector(`[data-index="${index}"]`);
+            if (detailToRemove) {
+                // Confirm before removing
+                if (confirm('Are you sure you want to remove this detail?')) {
+                    detailToRemove.remove();
+
+                    // Reindex remaining details to maintain proper form binding
+                    reindexDetails();
+                }
+            }
+        }
+
+        function reindexDetails() {
+            const details = document.querySelectorAll('.detail');
+            details.forEach((detail, newIndex) => {
+                // Update data-index attribute
+                detail.setAttribute('data-index', newIndex);
+
+                // Update all form field names
+                const inputs = detail.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    if (input.name) {
+                        // Replace the index in the name attribute
+                        input.name = input.name.replace(/\[\d+\]/, `[${newIndex}]`);
+                    }
+                });
+
+                // Update onclick attributes for buttons and selects
+                const removeBtn = detail.querySelector('button[onclick]');
+                if (removeBtn) {
+                    removeBtn.setAttribute('onclick', `removeDetail(${newIndex})`);
+                }
+
+                const accountSelect = detail.querySelector('select[onchange]');
+                if (accountSelect) {
+                    accountSelect.setAttribute('onchange', `updateAccountInfo(${newIndex})`);
+                }
+
+                // Update span IDs for account info
+                const accountCodeSpan = detail.querySelector('span[id^="accountCode_"]');
+                const accountNameSpan = detail.querySelector('span[id^="accountName_"]');
+                if (accountCodeSpan) accountCodeSpan.id = `accountCode_${newIndex}`;
+                if (accountNameSpan) accountNameSpan.id = `accountName_${newIndex}`;
+            });
+
+            // Update detailIndex to be the next available index
+            detailIndex = details.length;
         }
 
         function updateAccountInfo(index) {
@@ -107,5 +214,33 @@
                 document.getElementById(`accountName_${index}`).textContent = '';
             }
         }
+
+        // Optional: Add totals calculation
+        function calculateTotals() {
+            let totalDebit = 0;
+            let totalCredit = 0;
+
+            document.querySelectorAll('input[name*="DebitAmount"]').forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                totalDebit += value;
+            });
+
+            document.querySelectorAll('input[name*="CreditAmount"]').forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                totalCredit += value;
+            });
+
+            // You can display these totals if needed
+            console.log('Total Debit:', totalDebit);
+            console.log('Total Credit:', totalCredit);
+            console.log('Difference:', totalDebit - totalCredit);
+        }
+
+        // Optional: Add event listeners for real-time total calculation
+        document.addEventListener('input', function(e) {
+            if (e.target.name && (e.target.name.includes('DebitAmount') || e.target.name.includes('CreditAmount'))) {
+                calculateTotals();
+            }
+        });
     </script>
 }

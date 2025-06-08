@@ -9,13 +9,13 @@ namespace MiniAccountManagementSystem.Models
         public int AccountId { get; set; }
 
         [StringLength(200)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:N2}")]
-        public decimal DebitAmount { get; set; }
+        public decimal? DebitAmount { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:N2}")]
-        public decimal CreditAmount { get; set; }
+        public decimal? CreditAmount { get; set; }
 
         // For UI display
         public string AccountCode { get; set; }
